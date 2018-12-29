@@ -103,14 +103,13 @@
  * get a bit better compression from simple minifiers.
  */
 export function buildWhitelist() {
-  "use strict";
-
-  var t = true;
-  var j = true;  // included in the Jessie runtime
-  var TypedArrayWhitelist;  // defined and used below
+  const t = true;
+  const j = true; // included in the Jessie runtime
+  let TypedArrayWhitelist; // defined and used below
 
   const whitelist = {
-    cajaVM: {                        // Caja support
+    cajaVM: {
+      // Caja support
       // The accessible intrinsics which are not reachable by own
       // property name traversal are listed here so that they are
       // processed by the whitelist, although this also makes them
@@ -120,7 +119,8 @@ export function buildWhitelist() {
       // rest were introduced in ES6.
       anonIntrinsics: {
         ThrowTypeError: {},
-        IteratorPrototype: {  // 25.1
+        IteratorPrototype: {
+          // 25.1
           // Technically, for SES-on-ES5, we should not need to
           // whitelist 'next'. However, browsers are accidentally
           // relying on it
@@ -129,7 +129,7 @@ export function buildWhitelist() {
           // and we will be whitelisting it as we transition to ES6
           // anyway, so we unconditionally whitelist it now.
           next: '*',
-          constructor: false
+          constructor: false,
         },
         ArrayIteratorPrototype: {},
         StringIteratorPrototype: {},
@@ -150,22 +150,25 @@ export function buildWhitelist() {
         // from. The .next, .return and .throw that generator
         // instances respond to are actually the builtin methods they
         // inherit from this object.
-        GeneratorFunction: {  // 25.2
-          length: '*',  // Not sure why this is needed
-          prototype: {  // 25.3
+        GeneratorFunction: {
+          // 25.2
+          length: '*', // Not sure why this is needed
+          prototype: {
+            // 25.3
             prototype: {
               next: '*',
               return: '*',
               throw: '*',
-              constructor: '*'  // Not sure why this is needed
-            }
-          }
+              constructor: '*', // Not sure why this is needed
+            },
+          },
         },
         // TODO: 25.5 AsyncFunction
 
-        TypedArray: TypedArrayWhitelist = {  // 22.2
-          length: '*',  // does not inherit from Function.prototype on Chrome
-          name: '*',  // ditto
+        TypedArray: (TypedArrayWhitelist = {
+          // 22.2
+          length: '*', // does not inherit from Function.prototype on Chrome
+          name: '*', // ditto
           from: t,
           of: t,
           BYTES_PER_ELEMENT: '*',
@@ -197,9 +200,9 @@ export function buildWhitelist() {
             sort: '*',
             subarray: '*',
             values: '*',
-            BYTES_PER_ELEMENT: '*'
-          }
-        }
+            BYTES_PER_ELEMENT: '*',
+          },
+        }),
       },
 
       log: t,
@@ -211,8 +214,8 @@ export function buildWhitelist() {
 
       compileExpr: t,
       confine: j,
-      compileModule: t,              // experimental
-      compileProgram: t,             // Cannot be implemented in just ES5.1.
+      compileModule: t, // experimental
+      compileProgram: t, // Cannot be implemented in just ES5.1.
       eval: t,
       Function: t,
 
@@ -221,11 +224,11 @@ export function buildWhitelist() {
       copyToImports: t,
 
       GuardT: {
-        coerce: t
+        coerce: t,
       },
       makeTableGuard: t,
       Trademark: {
-        stamp: t
+        stamp: t,
       },
       guard: t,
       passesGuard: t,
@@ -233,14 +236,13 @@ export function buildWhitelist() {
       makeSealerUnsealerPair: t,
 
       makeArrayLike: {
-        canBeFullyLive: t
-      }
+        canBeFullyLive: t,
+      },
     },
 
     // In order according to
     // http://www.ecma-international.org/ecma-262/ with chapter
     // numbers where applicable
-
 
     // 18 The Global Object
 
@@ -251,7 +253,7 @@ export function buildWhitelist() {
 
     // 18.2
     // eval: t,                      // Whitelisting under separate control
-                                     // by TAME_GLOBAL_EVAL in startSES.js
+    // by TAME_GLOBAL_EVAL in startSES.js
     isFinite: t,
     isNaN: t,
     parseFloat: t,
@@ -261,33 +263,32 @@ export function buildWhitelist() {
     encodeURI: t,
     encodeURIComponent: t,
 
-
     // 19 Fundamental Objects
 
-    Object: {  // 19.1
-      assign: t,                     // ES-Harmony
+    Object: {
+      // 19.1
+      assign: t, // ES-Harmony
       create: t,
-      defineProperties: t,           // ES-Harmony
+      defineProperties: t, // ES-Harmony
       defineProperty: t,
-      entries: t,                    // ES-Harmony
+      entries: t, // ES-Harmony
       freeze: j,
       getOwnPropertyDescriptor: t,
-      getOwnPropertyDescriptors: t,  // proposed ES-Harmony
+      getOwnPropertyDescriptors: t, // proposed ES-Harmony
       getOwnPropertyNames: t,
-      getOwnPropertySymbols: t,      // ES-Harmony
+      getOwnPropertySymbols: t, // ES-Harmony
       getPrototypeOf: t,
-      is: j,                         // ES-Harmony
+      is: j, // ES-Harmony
       isExtensible: t,
       isFrozen: t,
       isSealed: t,
       keys: t,
       preventExtensions: j,
       seal: j,
-      setPrototypeOf: t,             // ES-Harmony
-      values: t,                     // ES-Harmony
+      setPrototypeOf: t, // ES-Harmony
+      values: t, // ES-Harmony
 
       prototype: {
-
         // B.2.2
         // __proto__: t, whitelisted manually in startSES.js
         __defineGetter__: t,
@@ -307,11 +308,12 @@ export function buildWhitelist() {
         [Symbol.iterator]: '*',
         [Symbol.toPrimitive]: '*',
         [Symbol.toStringTag]: '*',
-        [Symbol.unscopables]: '*'
-      }
+        [Symbol.unscopables]: '*',
+      },
     },
 
-    Function: {  // 19.2
+    Function: {
+      // 19.2
       length: t,
       prototype: {
         apply: t,
@@ -321,21 +323,23 @@ export function buildWhitelist() {
 
         // 19.2.4 instances
         length: '*',
-        name: '*',                   // ES-Harmony
+        name: '*', // ES-Harmony
         prototype: '*',
-        arity: '*',                   // non-std, deprecated in favor of length
+        arity: '*', // non-std, deprecated in favor of length
 
         // Generally allowed
-        [Symbol.species]: 'maybeAccessor'  // ES-Harmony?
-      }
+        [Symbol.species]: 'maybeAccessor', // ES-Harmony?
+      },
     },
 
-    Boolean: {  // 19.3
-      prototype: t
+    Boolean: {
+      // 19.3
+      prototype: t,
     },
 
-    Symbol: {  // 19.4               all ES-Harmony
-      asyncIterator: t,              // proposed? ES-Harmony
+    Symbol: {
+      // 19.4               all ES-Harmony
+      asyncIterator: t, // proposed? ES-Harmony
       for: t,
       hasInstance: t,
       isConcatSpreadable: t,
@@ -349,14 +353,15 @@ export function buildWhitelist() {
       toPrimitive: t,
       toStringTag: t,
       unscopables: t,
-      prototype: t
+      prototype: t,
     },
 
-    Error: {  // 19.5
+    Error: {
+      // 19.5
       prototype: {
         name: '*',
-        message: '*'
-      }
+        message: '*',
+      },
     },
     // In ES6 the *Error "subclasses" of Error inherit from Error,
     // since constructor inheritance generally mirrors prototype
@@ -368,50 +373,51 @@ export function buildWhitelist() {
     // subclasses in sync with the list in debug.js of subclasses to
     // be rewired.
     EvalError: {
-      prototype: t
+      prototype: t,
     },
     RangeError: {
-      prototype: t
+      prototype: t,
     },
     ReferenceError: {
-      prototype: t
+      prototype: t,
     },
     SyntaxError: {
-      prototype: t
+      prototype: t,
     },
     TypeError: {
-      prototype: t
+      prototype: t,
     },
     URIError: {
-      prototype: t
+      prototype: t,
     },
-
 
     // 20 Numbers and Dates
 
-    Number: {  // 20.1
-      EPSILON: t,                    // ES-Harmony
-      isFinite: j,                   // ES-Harmony
-      isInteger: t,                  // ES-Harmony
-      isNaN: j,                      // ES-Harmony
-      isSafeInteger: j,              // ES-Harmony
-      MAX_SAFE_INTEGER: j,           // ES-Harmony
+    Number: {
+      // 20.1
+      EPSILON: t, // ES-Harmony
+      isFinite: j, // ES-Harmony
+      isInteger: t, // ES-Harmony
+      isNaN: j, // ES-Harmony
+      isSafeInteger: j, // ES-Harmony
+      MAX_SAFE_INTEGER: j, // ES-Harmony
       MAX_VALUE: t,
-      MIN_SAFE_INTEGER: j,           // ES-Harmony
+      MIN_SAFE_INTEGER: j, // ES-Harmony
       MIN_VALUE: t,
       NaN: t,
       NEGATIVE_INFINITY: t,
-      parseFloat: t,                 // ES-Harmony
-      parseInt: t,                   // ES-Harmony
+      parseFloat: t, // ES-Harmony
+      parseInt: t, // ES-Harmony
       POSITIVE_INFINITY: t,
       prototype: {
         toExponential: t,
         toFixed: t,
-        toPrecision: t
-      }
+        toPrecision: t,
+      },
     },
 
-    Math: {  // 20.2
+    Math: {
+      // 20.2
       E: j,
       LN10: j,
       LN2: j,
@@ -423,44 +429,45 @@ export function buildWhitelist() {
 
       abs: j,
       acos: t,
-      acosh: t,                      // ES-Harmony
+      acosh: t, // ES-Harmony
       asin: t,
-      asinh: t,                      // ES-Harmony
+      asinh: t, // ES-Harmony
       atan: t,
-      atanh: t,                      // ES-Harmony
+      atanh: t, // ES-Harmony
       atan2: t,
-      cbrt: t,                       // ES-Harmony
+      cbrt: t, // ES-Harmony
       ceil: j,
-      clz32: t,                      // ES-Harmony
+      clz32: t, // ES-Harmony
       cos: t,
-      cosh: t,                       // ES-Harmony
+      cosh: t, // ES-Harmony
       exp: t,
-      expm1: t,                      // ES-Harmony
+      expm1: t, // ES-Harmony
       floor: j,
-      fround: t,                     // ES-Harmony
-      hypot: t,                      // ES-Harmony
-      imul: t,                       // ES-Harmony
+      fround: t, // ES-Harmony
+      hypot: t, // ES-Harmony
+      imul: t, // ES-Harmony
       log: j,
-      log1p: t,                      // ES-Harmony
-      log10: j,                      // ES-Harmony
-      log2: j,                       // ES-Harmony
+      log1p: t, // ES-Harmony
+      log10: j, // ES-Harmony
+      log2: j, // ES-Harmony
       max: j,
       min: j,
       pow: j,
-      random: t,                     // questionable
+      random: t, // questionable
       round: j,
-      sign: t,                       // ES-Harmony
+      sign: t, // ES-Harmony
       sin: t,
-      sinh: t,                       // ES-Harmony
+      sinh: t, // ES-Harmony
       sqrt: j,
       tan: t,
-      tanh: t,                       // ES-Harmony
-      trunc: j                       // ES-Harmony
+      tanh: t, // ES-Harmony
+      trunc: j, // ES-Harmony
     },
 
     // no-arg Date constructor is questionable
-    Date: {  // 20.3
-      now: t,                        // questionable
+    Date: {
+      // 20.3
+      now: t, // questionable
       parse: t,
       UTC: t,
       prototype: {
@@ -510,37 +517,37 @@ export function buildWhitelist() {
         // B.2.4
         getYear: t,
         setYear: t,
-        toGMTString: t
-      }
+        toGMTString: t,
+      },
     },
-
 
     // 21 Text Processing
 
-    String: {  // 21.2
+    String: {
+      // 21.2
       fromCharCode: j,
-      fromCodePoint: t,              // ES-Harmony
-      raw: j,                        // ES-Harmony
+      fromCodePoint: t, // ES-Harmony
+      raw: j, // ES-Harmony
       prototype: {
         charAt: t,
         charCodeAt: t,
-        codePointAt: t,              // ES-Harmony
+        codePointAt: t, // ES-Harmony
         concat: t,
-        endsWith: j,                 // ES-Harmony
-        includes: t,                 // ES-Harmony
+        endsWith: j, // ES-Harmony
+        includes: t, // ES-Harmony
         indexOf: j,
         lastIndexOf: j,
         localeCompare: t,
         match: t,
-        normalize: t,                // ES-Harmony
-        padEnd: t,                   // ES-Harmony
-        padStart: t,                 // ES-Harmony
-        repeat: t,                   // ES-Harmony
+        normalize: t, // ES-Harmony
+        padEnd: t, // ES-Harmony
+        padStart: t, // ES-Harmony
+        repeat: t, // ES-Harmony
         replace: t,
         search: t,
         slice: j,
         split: t,
-        startsWith: j,               // ES-Harmony
+        startsWith: j, // ES-Harmony
         substring: t,
         toLocaleLowerCase: t,
         toLocaleUpperCase: t,
@@ -564,58 +571,59 @@ export function buildWhitelist() {
         sub: t,
         sup: t,
 
-        trimLeft: t,                 // non-standard
-        trimRight: t,                // non-standard
+        trimLeft: t, // non-standard
+        trimRight: t, // non-standard
 
         // 21.1.4 instances
-        length: '*'
-      }
+        length: '*',
+      },
     },
 
-    RegExp: {  // 21.2
+    RegExp: {
+      // 21.2
       prototype: {
         exec: t,
         flags: 'maybeAccessor',
         global: 'maybeAccessor',
         ignoreCase: 'maybeAccessor',
-        [Symbol.match]: '*',         // ES-Harmony
+        [Symbol.match]: '*', // ES-Harmony
         multiline: 'maybeAccessor',
-        [Symbol.replace]: '*',       // ES-Harmony
-        [Symbol.search]: '*',        // ES-Harmony
+        [Symbol.replace]: '*', // ES-Harmony
+        [Symbol.search]: '*', // ES-Harmony
         source: 'maybeAccessor',
-        [Symbol.split]: '*',         // ES-Harmony
+        [Symbol.split]: '*', // ES-Harmony
         sticky: 'maybeAccessor',
         test: t,
-        unicode: 'maybeAccessor',    // ES-Harmony
-        dotAll: 'maybeAccessor',     // proposed ES-Harmony
+        unicode: 'maybeAccessor', // ES-Harmony
+        dotAll: 'maybeAccessor', // proposed ES-Harmony
 
         // 21.2.6 instances
         lastIndex: '*',
-        options: '*'                 // non-std
-      }
+        options: '*', // non-std
+      },
     },
-
 
     // 22 Indexed Collections
 
-    Array: {  // 22.1
+    Array: {
+      // 22.1
       from: j,
       isArray: t,
-      of: j,                         // ES-Harmony?
+      of: j, // ES-Harmony?
       prototype: {
         concat: t,
-        copyWithin: t,               // ES-Harmony
-        entries: t,                  // ES-Harmony
+        copyWithin: t, // ES-Harmony
+        entries: t, // ES-Harmony
         every: t,
-        fill: t,                     // ES-Harmony
+        fill: t, // ES-Harmony
         filter: j,
-        find: t,                     // ES-Harmony
-        findIndex: t,                // ES-Harmony
+        find: t, // ES-Harmony
+        findIndex: t, // ES-Harmony
         forEach: j,
-        includes: t,                 // ES-Harmony
+        includes: t, // ES-Harmony
         indexOf: j,
         join: t,
-        keys: t,                     // ES-Harmony
+        keys: t, // ES-Harmony
         lastIndexOf: j,
         map: j,
         pop: j,
@@ -629,14 +637,14 @@ export function buildWhitelist() {
         sort: t,
         splice: t,
         unshift: j,
-        values: t,                   // ES-Harmony
+        values: t, // ES-Harmony
 
         // B.2.5
-        compile: false,              // UNSAFE. Purposely suppressed
+        compile: false, // UNSAFE. Purposely suppressed
 
         // 22.1.4 instances
-        length: '*'
-      }
+        length: '*',
+      },
     },
 
     // 22.2 Typed Array stuff
@@ -652,10 +660,10 @@ export function buildWhitelist() {
     Float32Array: TypedArrayWhitelist,
     Float64Array: TypedArrayWhitelist,
 
-
     // 23 Keyed Collections          all ES-Harmony
 
-    Map: {  // 23.1
+    Map: {
+      // 23.1
       prototype: {
         clear: j,
         delete: j,
@@ -666,11 +674,12 @@ export function buildWhitelist() {
         keys: j,
         set: j,
         size: 'maybeAccessor',
-        values: j
-      }
+        values: j,
+      },
     },
 
-    Set: {  // 23.2
+    Set: {
+      // 23.2
       prototype: {
         add: j,
         clear: j,
@@ -680,47 +689,50 @@ export function buildWhitelist() {
         has: j,
         keys: j,
         size: 'maybeAccessor',
-        values: j
-      }
+        values: j,
+      },
     },
 
-    WeakMap: {  // 23.3
+    WeakMap: {
+      // 23.3
       prototype: {
         // Note: coordinate this list with maintenance of repairES5.js
         delete: j,
         get: j,
         has: j,
-        set: j
-      }
+        set: j,
+      },
     },
 
-    WeakSet: {  // 23.4
+    WeakSet: {
+      // 23.4
       prototype: {
         add: j,
         delete: j,
-        has: j
-      }
+        has: j,
+      },
     },
-
 
     // 24 Structured Data
 
-    ArrayBuffer: {  // 24.1            all ES-Harmony
+    ArrayBuffer: {
+      // 24.1            all ES-Harmony
       isView: t,
-      length: t,  // does not inherit from Function.prototype on Chrome
-      name: t,    // ditto
+      length: t, // does not inherit from Function.prototype on Chrome
+      name: t, // ditto
       prototype: {
         byteLength: 'maybeAccessor',
-        slice: t
-      }
+        slice: t,
+      },
     },
 
     // 24.2 TODO: Omitting SharedArrayBuffer for now
 
-    DataView: {  // 24.3               all ES-Harmony
-      length: t,  // does not inherit from Function.prototype on Chrome
-      name: t,    // ditto
-      BYTES_PER_ELEMENT: '*',          // non-standard. really?
+    DataView: {
+      // 24.3               all ES-Harmony
+      length: t, // does not inherit from Function.prototype on Chrome
+      name: t, // ditto
+      BYTES_PER_ELEMENT: '*', // non-standard. really?
       prototype: {
         buffer: 'maybeAccessor',
         byteOffset: 'maybeAccessor',
@@ -740,21 +752,22 @@ export function buildWhitelist() {
         setInt32: t,
         setUint8: t,
         setUint16: t,
-        setUint32: t
-      }
+        setUint32: t,
+      },
     },
 
     // 24.4 TODO: Omitting Atomics for now
 
-    JSON: {  // 24.5
+    JSON: {
+      // 24.5
       parse: j,
-      stringify: j
+      stringify: j,
     },
-
 
     // 25 Control Abstraction Objects
 
-    Promise: {  // 25.4
+    Promise: {
+      // 25.4
       all: j,
       race: j,
       reject: j,
@@ -762,7 +775,7 @@ export function buildWhitelist() {
       prototype: {
         catch: t,
         then: j,
-        finally: t,                    // proposed ES-Harmony
+        finally: t, // proposed ES-Harmony
 
         // nanoq.js
         get: t,
@@ -776,8 +789,8 @@ export function buildWhitelist() {
         // Temporary compat with the old makeQ.js
         send: t,
         delete: t,
-        end: t
-      }
+        end: t,
+      },
     },
 
     // nanoq.js
@@ -801,13 +814,13 @@ export function buildWhitelist() {
       promise: t,
       delay: t,
       memoize: t,
-      defer: t
+      defer: t,
     },
-
 
     // 26 Reflection
 
-    Reflect: {  // 26.1
+    Reflect: {
+      // 26.1
       apply: t,
       construct: t,
       defineProperty: t,
@@ -820,13 +833,13 @@ export function buildWhitelist() {
       ownKeys: t,
       preventExtensions: t,
       set: t,
-      setPrototypeOf: t
+      setPrototypeOf: t,
     },
 
-    Proxy: {  // 26.2
-      revocable: t
+    Proxy: {
+      // 26.2
+      revocable: t,
     },
-
 
     // Appendix B
 
@@ -834,14 +847,14 @@ export function buildWhitelist() {
     escape: t,
     unescape: t,
 
-
     // Other
 
-    StringMap: {  // A specialized approximation of ES-Harmony's Map.
-      prototype: {} // Technically, the methods should be on the prototype,
-                    // but doing so while preserving encapsulation will be
-                    // needlessly expensive for current usage.
-    }
+    StringMap: {
+      // A specialized approximation of ES-Harmony's Map.
+      prototype: {}, // Technically, the methods should be on the prototype,
+      // but doing so while preserving encapsulation will be
+      // needlessly expensive for current usage.
+    },
   };
 
   return whitelist;

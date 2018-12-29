@@ -35,7 +35,7 @@ function tameDate(global, options) {
   }
   Object.defineProperties(Date, Object.getOwnPropertyDescriptors(unsafeDate));
   // that will copy the .prototype too, so this next line is unnecessary
-  //Date.prototype = unsafeDate.prototype;
+  // Date.prototype = unsafeDate.prototype;
   unsafeDate.prototype.constructor = Date;
   const dateNowTrap = options.dateNowTrap;
   if (dateNowTrap === false) {
@@ -48,7 +48,7 @@ function tameDate(global, options) {
 }
 
 function tameMath(global) {
-  //global.Math.random = () => 4; // https://www.xkcd.com/221
+  // global.Math.random = () => 4; // https://www.xkcd.com/221
   global.Math.random = () => NaN;
 }
 
@@ -65,8 +65,11 @@ function tameIntl(global) {
 }
 
 function tameError(global) {
-  Object.defineProperty(global.Error.prototype, "stack",
-                        { get() { return 'stack suppressed'; } });
+  Object.defineProperty(global.Error.prototype, 'stack', {
+    get() {
+      return 'stack suppressed';
+    },
+  });
 }
 
 export function tamePrimordials(global, options) {

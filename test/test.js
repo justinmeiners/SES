@@ -1,33 +1,36 @@
 import test from 'tape';
 import SES from '../src/index.js';
 
-test('create', function(t) {
+test('create', t => {
   const s = SES.makeSESRootRealm();
   t.equal(1, 1);
   t.equal(s.evaluate('1+1'), 2);
   t.end();
 });
 
-test('SESRealm does not see primal realm names', function(t) {
-  let hidden = 1;
+test('SESRealm does not see primal realm names', t => {
+  const hidden = 1;
   const s = SES.makeSESRootRealm();
   t.throws(() => s.evaluate('hidden+1'), ReferenceError);
   t.end();
 });
 
-test('SESRealm also has SES', function(t) {
+test('SESRealm also has SES', t => {
   const s = SES.makeSESRootRealm();
   t.equal(1, 1);
   t.equal(s.evaluate('1+1'), 2);
-  t.equal(s.evaluate(`const s2 = SES.makeSESRootRealm(); s2.evaluate('1+2')`), 3);
+  t.equal(
+    s.evaluate("const s2 = SES.makeSESRootRealm(); s2.evaluate('1+2')"),
+    3,
+  );
   t.end();
 });
 
-test('SESRealm has SES.confine', function(t) {
+test('SESRealm has SES.confine', t => {
   const s = SES.makeSESRootRealm();
   t.equal(1, 1);
   t.equal(s.evaluate('1+1'), 2);
-  t.equal(s.evaluate(`SES.confine('1+2')`), 3);
+  t.equal(s.evaluate("SES.confine('1+2')"), 3);
   // it evals in the current RootRealm. We might test this by adding
   // something to the global, except that global has been frozen. todo:
   // if/when we add endowments to makeSESRootRealm(), set one and then test
@@ -39,15 +42,15 @@ test('SESRealm has SES.confine', function(t) {
   // lexical scope (*not* copied onto the global object, which is frozen
   // anyways), so they'll be available for only the duration of the eval, and
   // only as unbound names (so they could be found statically in the AST)
-  t.equal(s.evaluate(`SES.confine('b+2', { b: 3 })`), 5);
-  t.throws(() => s.evaluate(`SES.confine('b+2')`), ReferenceError);
+  t.equal(s.evaluate("SES.confine('b+2', { b: 3 })"), 5);
+  t.throws(() => s.evaluate("SES.confine('b+2')"), ReferenceError);
   t.end();
 });
 
-test('SESRealm.SES wraps exceptions', function(t) {
+test('SESRealm.SES wraps exceptions', t => {
   const s = SES.makeSESRootRealm();
   function fail() {
-      missing;
+    missing;
   }
   function check(failStr) {
     try {
@@ -61,23 +64,26 @@ test('SESRealm.SES wraps exceptions', function(t) {
     return 'did not throw';
   }
   const failStr = `${fail}; fail()`;
-  t.equal(s.evaluate(`${check}; check(failStr)`, { failStr }), 'inner ReferenceError');
+  t.equal(
+    s.evaluate(`${check}; check(failStr)`, { failStr }),
+    'inner ReferenceError',
+  );
   t.end();
 });
 
-test('SESRealm is frozen', function(t) {
+test('SESRealm is frozen', t => {
   const s = SES.makeSESRootRealm();
   t.throws(() => s.evaluate('this.a = 10;'), TypeError);
   t.equal(s.evaluate('this.a'), undefined);
   t.end();
 });
 
-test('primal realm SES does not have confine', function(t) {
+test('primal realm SES does not have confine', t => {
   t.equal(Object.hasOwnProperty('SES'), false);
   t.end();
 });
 
-test('main use case', function(t) {
+test('main use case', t => {
   const s = SES.makeSESRootRealm();
   function power(a) {
     return a + 1;
@@ -97,4 +103,3 @@ test('main use case', function(t) {
   t.throws(() => user(-1), s.global.TypeError);
   t.end();
 });
-

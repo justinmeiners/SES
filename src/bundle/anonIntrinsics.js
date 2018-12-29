@@ -21,8 +21,6 @@
 // object X will pass this brand test when X will. This is fixed as of
 // FF Nightly 38.0a1.
 
-
-
 /**
  * <p>Qualifying platforms generally include all JavaScript platforms
  * shown on <a href="http://kangax.github.com/es5-compat-table/"
@@ -69,14 +67,14 @@
  * perturbations.
  */
 export function getAnonIntrinsics(global) {
-  "use strict";
-
-  //////////////// Undeniables and Intrinsics //////////////
+  // ////////////// Undeniables and Intrinsics //////////////
 
   /**
    * A known strict function which returns its arguments object.
    */
-  function strictArguments() { return arguments; }
+  function strictArguments() {
+    return arguments;
+  }
 
   /**
    * A known sloppy function which returns its arguments object.
@@ -84,7 +82,7 @@ export function getAnonIntrinsics(global) {
    * Defined using Function so it'll be sloppy (not strict and not
    * builtin).
    */
-  var sloppyArguments = Function('return arguments;');
+  const sloppyArguments = Function('return arguments;');
 
   /**
    * If present, a known strict generator function which yields its
@@ -95,19 +93,25 @@ export function getAnonIntrinsics(global) {
    * generator syntax, and treat strictArgumentsGenerator as
    * unconditional in the test of the code.
    */
-  var strictArgumentsGenerator = void 0;
+  let strictArgumentsGenerator = void 0;
   try {
     // ES6 syntax
-    strictArgumentsGenerator =
-        eval('(function*() { "use strict"; yield arguments; })');
+    strictArgumentsGenerator = eval(
+      '(function*() { "use strict"; yield arguments; })',
+    );
   } catch (ex) {
-    if (!(ex instanceof SyntaxError)) { throw ex; }
+    if (!(ex instanceof SyntaxError)) {
+      throw ex;
+    }
     try {
       // Old Firefox syntax
-      strictArgumentsGenerator =
-          eval('(function() { "use strict"; yield arguments; })');
+      strictArgumentsGenerator = eval(
+        '(function() { "use strict"; yield arguments; })',
+      );
     } catch (ex2) {
-      if (!(ex2 instanceof SyntaxError)) { throw ex2; }
+      if (!(ex2 instanceof SyntaxError)) {
+        throw ex2;
+      }
     }
   }
 
@@ -122,8 +126,8 @@ export function getAnonIntrinsics(global) {
    * environment.
    */
   function getUndeniables() {
-    var gopd = Object.getOwnPropertyDescriptor;
-    var getProto = Object.getPrototypeOf;
+    const gopd = Object.getOwnPropertyDescriptor;
+    const getProto = Object.getPrototypeOf;
 
     // The first element of each undeniableTuple is a string used to
     // name the undeniable object for reporting purposes. It has no
@@ -141,16 +145,16 @@ export function getAnonIntrinsics(global) {
     // Is the resulting object either the undeniable object, or does
     // it inherit directly from the undeniable object?
 
-    var undeniableTuples = [
-        ['Object.prototype', Object.prototype, {}],
-        ['Function.prototype', Function.prototype, function(){}],
-        ['Array.prototype', Array.prototype, []],
-        ['RegExp.prototype', RegExp.prototype, /x/],
-        ['Boolean.prototype', Boolean.prototype, true],
-        ['Number.prototype', Number.prototype, 1],
-        ['String.prototype', String.prototype, 'x'],
+    const undeniableTuples = [
+      ['Object.prototype', Object.prototype, {}],
+      ['Function.prototype', Function.prototype, function() {}],
+      ['Array.prototype', Array.prototype, []],
+      ['RegExp.prototype', RegExp.prototype, /x/],
+      ['Boolean.prototype', Boolean.prototype, true],
+      ['Number.prototype', Number.prototype, 1],
+      ['String.prototype', String.prototype, 'x'],
     ];
-    var result = {};
+    const result = {};
 
     // Get the ES6 %Generator% intrinsic, if present.
     // It is undeniable because individual generator functions inherit
@@ -160,23 +164,34 @@ export function getAnonIntrinsics(global) {
       // i.e., Figure 2 of section 25.2 "Generator Functions" of the
       // ES6 spec.
       // https://people.mozilla.org/~jorendorff/es6-draft.html#sec-generatorfunction-objects
-      if (!strictArgumentsGenerator) { return; }
-      var Generator = getProto(strictArgumentsGenerator);
-      undeniableTuples.push(['%Generator%', Generator,
-                             strictArgumentsGenerator]);
+      if (!strictArgumentsGenerator) {
+        return;
+      }
+      const Generator = getProto(strictArgumentsGenerator);
+      undeniableTuples.push([
+        '%Generator%',
+        Generator,
+        strictArgumentsGenerator,
+      ]);
       strictArgumentsGenerator = strictArgumentsGenerator;
-    }());
+    })();
 
-    undeniableTuples.forEach(function(tuple) {
-      var name = tuple[0];
-      var undeniable = tuple[1];
-      var start = tuple[2];
+    undeniableTuples.forEach(tuple => {
+      const name = tuple[0];
+      const undeniable = tuple[1];
+      let start = tuple[2];
       result[name] = undeniable;
-      if (start === void 0) { return; }
+      if (start === void 0) {
+        return;
+      }
       start = Object(start);
-      if (undeniable === start) { return; }
-      if (undeniable === getProto(start)) { return; }
-      throw new Error('Unexpected undeniable: ' + undeniable);
+      if (undeniable === start) {
+        return;
+      }
+      if (undeniable === getProto(start)) {
+        return;
+      }
+      throw new Error(`Unexpected undeniable: ${undeniable}`);
     });
 
     return result;
@@ -187,33 +202,30 @@ export function getAnonIntrinsics(global) {
   // and check that the undeniables are the same.
   const earlyUndeniables = getUndeniables();
 
-
   function registerIteratorProtos(registery, base, name) {
-    var iteratorSym = global.Symbol && global.Symbol.iterator ||
-        "@@iterator"; // used instead of a symbol on FF35
-    var getProto = Object.getPrototypeOf;
+    const iteratorSym =
+      (global.Symbol && global.Symbol.iterator) || '@@iterator'; // used instead of a symbol on FF35
+    const getProto = Object.getPrototypeOf;
 
     if (base[iteratorSym]) {
-      var anIter = base[iteratorSym]();
-      var anIteratorPrototype = getProto(anIter);
+      const anIter = base[iteratorSym]();
+      const anIteratorPrototype = getProto(anIter);
       registery[name] = anIteratorPrototype;
-      var anIterProtoBase = getProto(anIteratorPrototype);
+      const anIterProtoBase = getProto(anIteratorPrototype);
       if (anIterProtoBase !== Object.prototype) {
         if (!registery.IteratorPrototype) {
           if (getProto(anIterProtoBase) !== Object.prototype) {
             throw new Error(
-              '%IteratorPrototype%.__proto__ was not Object.prototype');
+              '%IteratorPrototype%.__proto__ was not Object.prototype',
+            );
           }
           registery.IteratorPrototype = anIterProtoBase;
-        } else {
-          if (registery.IteratorPrototype !== anIterProtoBase) {
-            throw new Error('unexpected %' + name + '%.__proto__');
-          }
+        } else if (registery.IteratorPrototype !== anIterProtoBase) {
+          throw new Error(`unexpected %${name}%.__proto__`);
         }
       }
     }
   }
-
 
   /**
    * Get the intrinsics not otherwise reachable by named own property
@@ -227,9 +239,9 @@ export function getAnonIntrinsics(global) {
    * in order to properly initialize cajaVM.intrinsics
    */
   function getAnonIntrinsics() {
-    var gopd = Object.getOwnPropertyDescriptor;
-    var getProto = Object.getPrototypeOf;
-    var result = {};
+    const gopd = Object.getOwnPropertyDescriptor;
+    const getProto = Object.getPrototypeOf;
+    const result = {};
 
     // If there are still other ThrowTypeError objects left after
     // noFuncPoison-ing, this should be caught by
@@ -250,33 +262,43 @@ export function getAnonIntrinsics(global) {
       if (typeof Set === 'function') {
         registerIteratorProtos(result, new Set(), 'SetIteratorPrototype');
       }
-    }());
+    })();
 
     // Get the ES6 %GeneratorFunction% intrinsic, if present.
     (function() {
-      var Generator = earlyUndeniables['%Generator%'];
-      if (!Generator || Generator === Function.prototype) { return; }
+      const Generator = earlyUndeniables['%Generator%'];
+      if (!Generator || Generator === Function.prototype) {
+        return;
+      }
       if (getProto(Generator) !== Function.prototype) {
         throw new Error('Generator.__proto__ was not Function.prototype');
       }
-      var GeneratorFunction = Generator.constructor;
-      if (GeneratorFunction === Function) { return; }
+      const GeneratorFunction = Generator.constructor;
+      if (GeneratorFunction === Function) {
+        return;
+      }
       if (getProto(GeneratorFunction) !== Function) {
         throw new Error('GeneratorFunction.__proto__ was not Function');
       }
       result.GeneratorFunction = GeneratorFunction;
-      var genProtoBase = getProto(Generator.prototype);
-      if (genProtoBase !== result.IteratorPrototype &&
-          genProtoBase !== Object.prototype) {
+      const genProtoBase = getProto(Generator.prototype);
+      if (
+        genProtoBase !== result.IteratorPrototype &&
+        genProtoBase !== Object.prototype
+      ) {
         throw new Error('Unexpected Generator.prototype.__proto__');
       }
-    }());
+    })();
 
     // Get the ES6 %TypedArray% intrinsic, if present.
     (function() {
-      if (!global.Float32Array) { return; }
-      var TypedArray = getProto(global.Float32Array);
-      if (TypedArray === Function.prototype) { return; }
+      if (!global.Float32Array) {
+        return;
+      }
+      const TypedArray = getProto(global.Float32Array);
+      if (TypedArray === Function.prototype) {
+        return;
+      }
       if (getProto(TypedArray) !== Function.prototype) {
         // http://bespin.cz/~ondras/html/classv8_1_1ArrayBufferView.html
         // has me worried that someone might make such an intermediate
@@ -284,11 +306,11 @@ export function getAnonIntrinsics(global) {
         throw new Error('TypedArray.__proto__ was not Function.prototype');
       }
       result.TypedArray = TypedArray;
-    }());
+    })();
 
-    for (var name in result) {
+    for (const name in result) {
       if (result[name] === void 0) {
-        throw new Error('Malformed intrinsic: ' + name);
+        throw new Error(`Malformed intrinsic: ${name}`);
       }
     }
 

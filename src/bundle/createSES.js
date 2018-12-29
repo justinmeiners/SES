@@ -18,7 +18,7 @@ export function createSESWithRealmConstructor(creatorStrings, Realm) {
     const r = Realm.makeRootRealm();
     const b = r.evaluate(creatorStrings);
     b.createSESInThisRealm(r.global, creatorStrings, r);
-    //b.removeProperties(r.global);
+    // b.removeProperties(r.global);
     b.tamePrimordials(r.global, options);
     r.global.def = b.def;
     r.global.Nat = b.Nat;
@@ -44,7 +44,7 @@ export function createSESInThisRealm(global, creatorStrings, parentRealm) {
     ['ReferenceError', ReferenceError],
     ['SyntaxError', SyntaxError],
     ['TypeError', TypeError],
-    ['URIError', URIError]
+    ['URIError', URIError],
   ]);
 
   // callAndWrapError is copied from the Realm shim. Our SES.confine (from
@@ -67,7 +67,9 @@ export function createSESInThisRealm(global, creatorStrings, parentRealm) {
         // err is a primitive value, which is safe to rethrow
         throw err;
       }
-      let eName, eMessage, eStack;
+      let eName;
+      let eMessage;
+      let eStack;
       try {
         // The child environment might seek to use 'err' to reach the
         // parent's intrinsics and corrupt them. `${err.name}` will cause
@@ -103,8 +105,8 @@ export function createSESInThisRealm(global, creatorStrings, parentRealm) {
   // closes over the parent's Realm object so it shouldn't be accessible from
   // the outside.
 
-  global.SES.confine = (code, endowments) => callAndWrapError(
-    () => parentRealm.evaluate(code, endowments));
-  global.SES.confineExpr = (code, endowments) => callAndWrapError(
-    () => parentRealm.evaluate(`(${code})`, endowments));
+  global.SES.confine = (code, endowments) =>
+    callAndWrapError(() => parentRealm.evaluate(code, endowments));
+  global.SES.confineExpr = (code, endowments) =>
+    callAndWrapError(() => parentRealm.evaluate(`(${code})`, endowments));
 }
