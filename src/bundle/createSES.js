@@ -17,6 +17,8 @@ import tameMath from './tame-math.js';
 import tameIntl from './tame-intl.js';
 import tameError from './tame-error.js';
 import tameRegExp from './tame-regexp.js';
+import removeProperties from './removeProperties.js';
+import whitelist from './whitelist.js';
 
 export function createSESWithRealmConstructor(creatorStrings, Realm) {
   function makeSESRootRealm(options) {
@@ -45,6 +47,8 @@ export function createSESWithRealmConstructor(creatorStrings, Realm) {
     if (options.regexpMode !== "allow") {
       shims.push(`(${tameRegExp})();`);
     }
+
+    shims.push(`(${removeProperties})(this, ${JSON.stringify(whitelist)})`);
 
     const r = Realm.makeRootRealm({shims: shims});
     const b = r.evaluate(creatorStrings);

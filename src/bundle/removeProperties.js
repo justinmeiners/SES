@@ -13,13 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { buildWhitelist } from './whitelist.js';
-import { getAnonIntrinsics } from './anonIntrinsics.js';
+//import { getAnonIntrinsics } from './anonIntrinsics.js';
 
-export function removeProperties(global) {
+export default function removeProperties(global, whitelist) {
   // walk global object, test against whitelist, delete
-
-  const whitelist = buildWhitelist();
 
   const uncurryThis = fn => (thisArg, ...args) => Reflect.apply(fn, thisArg, args);
   const gopd = Object.getOwnPropertyDescriptor;
@@ -144,7 +141,8 @@ export function removeProperties(global) {
   }
 
   addToWhiteTable(global);
-  addToWhiteTable(getAnonIntrinsics());
+  //addToWhiteTable(getAnonIntrinsics(global));
   clean(global, '');
+  //throw Error("global is" + JSON.stringify(Object.getOwnPropertyDescriptors(global)));
 
 }
