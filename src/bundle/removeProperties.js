@@ -1,3 +1,5 @@
+/* global getAnonIntrinsics mylog */
+
 // Copyright (C) 2011 Google Inc.
 // Copyright (C) 2018 Agoric
 //
@@ -28,7 +30,7 @@ export default function removeProperties(global, whitelist) {
 
   const whiteTable = new WeakMap();
 
-  function addToWhiteTable(global) {
+  function addToWhiteTable(global, bagel) {
     /**
      * The whiteTable should map from each path-accessible primordial
      * object to the permit object that describes how it should be
@@ -61,7 +63,7 @@ export default function removeProperties(global, whitelist) {
         }
       });
     }
-    register(global, whitelist);
+    register(global, bagel);
   }
 
 
@@ -93,6 +95,20 @@ export default function removeProperties(global, whitelist) {
     }
   }
 
+  let counter = 0;
+  function nextCounter() {
+    let c = counter+1;
+    counter += 1;
+    return c;
+  }
+  function spacePrefix(level) {
+    let p = "";
+    for(let i = 0; i<level; i++) {
+      p += " | ";
+    }
+    return p;
+  }
+
   /**
    * Removes all non-whitelisted properties found by recursively and
    * reflectively walking own property chains.
@@ -100,16 +116,26 @@ export default function removeProperties(global, whitelist) {
    * <p>Inherited properties are not checked, because we require that
    * inherited-from objects are otherwise reachable by this traversal.
    */
-  function clean(value, prefix) {
-    if (value !== Object(value)) { return; }
-    if (cleaning.get(value)) { return; }
+  function clean(value, prefix, num) {
+    //mylog(spacePrefix(num), "clean", value, prefix);
+    if (value !== Object(value)) { 
+      //mylog(spacePrefix(num), "x1", value);
+      return;
+    }
+    if (cleaning.get(value)) { 
+      //mylog(spacePrefix(num), "x2", value);
+      return;
+    }
+    //mylog(spacePrefix(num), ".1");
 
     const proto = getProto(value);
     if (proto !== null && !whiteTable.has(proto)) {
       //reportItemProblem(rootReports, ses.severities.NOT_ISOLATED,
       //                  'unexpected intrinsic', prefix + '.__proto__');
+      //mylog(spacePrefix(num), "x3", "unexpected intrinsic .proto");
       throw new Error(`unexpected intrinsic ${prefix}.__proto__`);
     }
+    //mylog(spacePrefix(num), ".2");
 
     cleaning.set(value, true);
     gopn(value).forEach(function(name) {
@@ -120,7 +146,7 @@ export default function removeProperties(global, whitelist) {
         if (hop(desc, 'value')) {
           // Is a data property
           const subValue = desc.value;
-          clean(subValue, path);
+          clean(subValue, path, num+1);
         } else {
           if (p !== 'maybeAccessor') {
             // We are not saying that it is safe for the prop to be
@@ -130,19 +156,36 @@ export default function removeProperties(global, whitelist) {
             //               'Not a data property', path);
             delete value[name];
           } else {
-            clean(desc.get, path + '<getter>');
-            clean(desc.set, path + '<setter>');
+            clean(desc.get, path + '<getter>', num+1);
+            clean(desc.set, path + '<setter>', num+1);
           }
         }
       } else {
-        delete value[name];
+        try {
+          delete value[name];
+        } catch(e) {
+          //mylog("x5", path, name, Object.getOwnPropertyDescriptors(value), Object.isExtensible(value));
+          value.sdfasdfs = 1;
+          //mylog("x6");
+          throw e;
+        }
       }
     });
+    //mylog(spacePrefix(num), "x4", value, prefix);
   }
 
-  addToWhiteTable(global);
+  //mylog("-- calling addToWhiteTable(global)");
+  addToWhiteTable(global, whitelist);
+  const intr = getAnonIntrinsics(global);
+  //mylog("-- intrinsics:", intr);
+  //mylog("-- x", Object.getPrototypeOf(Float32Array) === intr.TypedArray);
+
   //addToWhiteTable(getAnonIntrinsics(global));
-  clean(global, '');
+  addToWhiteTable(intr, whitelist.cajaVM.anonIntrinsics);
+  //mylog("-- y", whiteTable.has(intr.TypedArray));
+  //mylog("-- calling clean(global)");
+  clean(global, '', 0);
+  //mylog("-- done with clean(global)");
   //throw Error("global is" + JSON.stringify(Object.getOwnPropertyDescriptors(global)));
 
 }

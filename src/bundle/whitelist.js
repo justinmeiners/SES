@@ -840,5 +840,15 @@ export default {
       prototype: {} // Technically, the methods should be on the prototype,
                     // but doing so while preserving encapsulation will be
                     // needlessly expensive for current usage.
-    }
+    },
+
+    Realm: { makeRootRealm: t,
+             makeCompartment: t,
+             prototype: { global: "maybeAccessor",
+                          evaluate: t
+                        }
+           },
+    SES: { confine: t,
+           confineExpr: t
+         }
   };
